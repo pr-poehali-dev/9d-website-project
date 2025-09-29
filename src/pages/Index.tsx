@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('main');
+  const [classPhoto, setClassPhoto] = useState<string | null>(null);
 
   const navigationItems = [
     { id: 'main', label: 'Главная', icon: 'Home' },
@@ -24,6 +25,17 @@ const Index = () => {
 
   const students: string[] = [];
 
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setClassPhoto(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const renderMainSection = () => (
     <div className="space-y-8">
       {/* Заголовок класса */}
@@ -34,11 +46,36 @@ const Index = () => {
 
       {/* Рамка для фото */}
       <div className="flex justify-center">
-        <div className="w-96 h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:border-primary hover:bg-blue-50 transition-colors duration-300 cursor-pointer">
-          <div className="text-center text-gray-500">
-            <Icon name="Camera" size={48} className="mx-auto mb-2" />
-            <p className="text-lg">Добавить фото класса</p>
-          </div>
+        <div className="relative">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            id="photo-upload"
+          />
+          {classPhoto ? (
+            <div className="relative group">
+              <img 
+                src={classPhoto} 
+                alt="Фото класса 9Д" 
+                className="w-96 h-64 object-cover rounded-lg shadow-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="text-white text-center">
+                  <Icon name="Camera" size={32} className="mx-auto mb-2" />
+                  <p>Изменить фото</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="w-96 h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:border-primary hover:bg-blue-50 transition-colors duration-300 cursor-pointer">
+              <div className="text-center text-gray-500">
+                <Icon name="Camera" size={48} className="mx-auto mb-2" />
+                <p className="text-lg">Добавить фото класса</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

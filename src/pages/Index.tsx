@@ -77,7 +77,7 @@ const Index = () => {
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-xl font-semibold text-primary mb-2">Иванова Елена Сергеевна</div>
+            <div className="text-xl font-semibold text-primary mb-2">Кристина Робертовна</div>
             <div className="text-gray-600">Классный руководитель</div>
           </CardContent>
         </Card>
@@ -116,13 +116,13 @@ const Index = () => {
               <Icon name="User" size={40} className="text-white" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-semibold text-gray-900">Иванова Елена Сергеевна</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">Кристина Робертовна</h3>
               <p className="text-gray-600">Учитель математики и физики</p>
               <p className="text-gray-600">Стаж работы: 15 лет</p>
               <div className="flex items-center space-x-4 pt-2">
                 <div className="flex items-center space-x-2">
                   <Icon name="Mail" size={16} className="text-gray-500" />
-                  <span className="text-sm text-gray-600">ivanova@school.edu</span>
+                  <span className="text-sm text-gray-600">kristina@school.edu</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Icon name="Phone" size={16} className="text-gray-500" />

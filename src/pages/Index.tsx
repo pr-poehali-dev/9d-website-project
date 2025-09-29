@@ -16,19 +16,9 @@ const Index = () => {
     { id: 'materials', label: 'Учебные материалы', icon: 'FileText' }
   ];
 
-  const homeworkItems = [
-    { subject: 'Математика', task: 'Решить уравнения №45-50', due: '2024-10-01', status: 'active' },
-    { subject: 'Русский язык', task: 'Написать сочинение по произведению', due: '2024-10-03', status: 'active' },
-    { subject: 'История', task: 'Изучить параграф 12', due: '2024-09-30', status: 'overdue' },
-    { subject: 'Физика', task: 'Лабораторная работа №3', due: '2024-10-05', status: 'upcoming' }
-  ];
+  const homeworkItems: Array<{subject: string; task: string; due: string; status: string}> = [];
 
-  const materialItems = [
-    { title: 'Расписание занятий', type: 'PDF', size: '156 КБ' },
-    { title: 'Учебный план', type: 'DOC', size: '245 КБ' },
-    { title: 'Презентация по биологии', type: 'PPT', size: '2.1 МБ' },
-    { title: 'Карта для географии', type: 'PNG', size: '890 КБ' }
-  ];
+  const materialItems: Array<{title: string; type: string; size: string}> = [];
 
   const newsItems = [
     { title: 'Экскурсия в музей', date: '2024-09-25', content: 'Планируется посещение исторического музея 15 октября' },
@@ -36,16 +26,7 @@ const Index = () => {
     { title: 'Школьная олимпиада', date: '2024-09-15', content: 'Регистрация на олимпиаду по математике открыта до 30 сентября' }
   ];
 
-  const students = [
-    'Алексеев Дмитрий', 'Белова Анна', 'Васильев Игорь', 'Григорьева Мария',
-    'Данилов Артем', 'Егорова Елена', 'Жуков Максим', 'Захарова София',
-    'Иванов Александр', 'Козлова Виктория', 'Лебедев Никита', 'Михайлова Дарья',
-    'Новиков Владислав', 'Орлова Полина', 'Петров Егор', 'Романова Ксения',
-    'Смирнов Андрей', 'Титова Анастасия', 'Федоров Денис', 'Чернова Алиса',
-    'Абрамов Артур', 'Боброва Елизавета', 'Волков Матвей', 'Герасимова Ульяна',
-    'Дорофеев Кирилл', 'Ермолаева Варвара', 'Зайцев Роман', 'Калинина Милана',
-    'Лапин Тимофей', 'Назарова Злата'
-  ];
+  const students: string[] = [];
 
   const renderMainSection = () => (
     <div className="space-y-8">
@@ -71,7 +52,7 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">30</div>
+            <div className="text-3xl font-bold text-primary mb-2">0</div>
             <div className="text-gray-600">Учеников в классе</div>
           </CardContent>
         </Card>

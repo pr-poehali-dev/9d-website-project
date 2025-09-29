@@ -99,21 +99,37 @@ const Index = () => {
 
   const renderNewsSection = () => (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">Новости класса</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-gray-900">Новости класса</h2>
+        <Button className="flex items-center space-x-2">
+          <Icon name="Plus" size={18} />
+          <span>Добавить новость</span>
+        </Button>
+      </div>
       <div className="space-y-4">
-        {newsItems.map((news, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{news.title}</CardTitle>
-                <Badge variant="outline">{news.date}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">{news.content}</p>
+        {newsItems.length > 0 ? (
+          newsItems.map((news, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{news.title}</CardTitle>
+                  <Badge variant="outline">{news.date}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">{news.content}</p>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card className="border-dashed border-gray-300">
+            <CardContent className="p-12 text-center text-gray-500">
+              <Icon name="Newspaper" size={48} className="mx-auto mb-4 text-gray-300" />
+              <p className="text-lg mb-2">Новостей пока нет</p>
+              <p>Нажмите кнопку "Добавить новость" чтобы создать первую запись</p>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -149,76 +165,128 @@ const Index = () => {
 
   const renderStudentsSection = () => (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">Ученики класса</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-gray-900">Ученики класса</h2>
+        <Button className="flex items-center space-x-2">
+          <Icon name="Plus" size={18} />
+          <span>Добавить ученика</span>
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {students.map((student, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold">{index + 1}</span>
+        {students.length > 0 ? (
+          students.map((student, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold">{index + 1}</span>
+                  </div>
+                  <span className="font-medium text-gray-900">{student}</span>
                 </div>
-                <span className="font-medium text-gray-900">{student}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full">
+            <Card className="border-dashed border-gray-300">
+              <CardContent className="p-12 text-center text-gray-500">
+                <Icon name="Users" size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-lg mb-2">Список учеников пуст</p>
+                <p>Нажмите кнопку "Добавить ученика" чтобы начать формирование списка класса</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
 
   const renderHomeworkSection = () => (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">Домашние задания</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-gray-900">Домашние задания</h2>
+        <Button className="flex items-center space-x-2">
+          <Icon name="Plus" size={18} />
+          <span>Добавить задание</span>
+        </Button>
+      </div>
       <div className="space-y-4">
-        {homeworkItems.map((homework, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-semibold text-gray-900">{homework.subject}</h3>
-                <Badge 
-                  variant={homework.status === 'overdue' ? 'destructive' : homework.status === 'upcoming' ? 'secondary' : 'default'}
-                >
-                  {homework.status === 'overdue' ? 'Просрочено' : 
-                   homework.status === 'upcoming' ? 'Скоро' : 'Активно'}
-                </Badge>
-              </div>
-              <p className="text-gray-600 mb-3">{homework.task}</p>
-              <div className="flex items-center text-sm text-gray-500">
-                <Icon name="Calendar" size={16} className="mr-2" />
-                Срок сдачи: {homework.due}
-              </div>
+        {homeworkItems.length > 0 ? (
+          homeworkItems.map((homework, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-semibold text-gray-900">{homework.subject}</h3>
+                  <Badge 
+                    variant={homework.status === 'overdue' ? 'destructive' : homework.status === 'upcoming' ? 'secondary' : 'default'}
+                  >
+                    {homework.status === 'overdue' ? 'Просрочено' : 
+                     homework.status === 'upcoming' ? 'Скоро' : 'Активно'}
+                  </Badge>
+                </div>
+                <p className="text-gray-600 mb-3">{homework.task}</p>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Icon name="Calendar" size={16} className="mr-2" />
+                  Срок сдачи: {homework.due}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card className="border-dashed border-gray-300">
+            <CardContent className="p-12 text-center text-gray-500">
+              <Icon name="BookOpen" size={48} className="mx-auto mb-4 text-gray-300" />
+              <p className="text-lg mb-2">Домашних заданий пока нет</p>
+              <p>Нажмите кнопку "Добавить задание" чтобы создать новое домашнее задание</p>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
     </div>
   );
 
   const renderMaterialsSection = () => (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">Учебные материалы</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-gray-900">Учебные материалы</h2>
+        <Button className="flex items-center space-x-2">
+          <Icon name="Plus" size={18} />
+          <span>Добавить материал</span>
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {materialItems.map((material, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="FileText" size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{material.title}</h3>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
-                    <span>{material.type}</span>
-                    <span>•</span>
-                    <span>{material.size}</span>
+        {materialItems.length > 0 ? (
+          materialItems.map((material, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                    <Icon name="FileText" size={24} className="text-white" />
                   </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{material.title}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                      <span>{material.type}</span>
+                      <span>•</span>
+                      <span>{material.size}</span>
+                    </div>
+                  </div>
+                  <Icon name="Download" size={20} className="text-gray-400" />
                 </div>
-                <Icon name="Download" size={20} className="text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full">
+            <Card className="border-dashed border-gray-300">
+              <CardContent className="p-12 text-center text-gray-500">
+                <Icon name="FileText" size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-lg mb-2">Учебных материалов пока нет</p>
+                <p>Нажмите кнопку "Добавить материал" чтобы загрузить первый файл</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

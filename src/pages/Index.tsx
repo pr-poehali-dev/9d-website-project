@@ -2,11 +2,21 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('main');
   const [classPhoto, setClassPhoto] = useState<string | null>(null);
+  
+  // Form states
+  const [newsForm, setNewsForm] = useState({ title: '', content: '' });
+  const [studentForm, setStudentForm] = useState({ name: '' });
+  const [homeworkForm, setHomeworkForm] = useState({ subject: '', task: '', due: '' });
+  const [materialForm, setMaterialForm] = useState({ title: '', file: null as File | null });
 
   const navigationItems = [
     { id: 'main', label: 'Главная', icon: 'Home' },
@@ -17,13 +27,13 @@ const Index = () => {
     { id: 'materials', label: 'Учебные материалы', icon: 'FileText' }
   ];
 
-  const homeworkItems: Array<{subject: string; task: string; due: string; status: string}> = [];
+  const [homeworkItems, setHomeworkItems] = useState<Array<{subject: string; task: string; due: string; status: string}>>([]);
 
-  const materialItems: Array<{title: string; type: string; size: string}> = [];
+  const [materialItems, setMaterialItems] = useState<Array<{title: string; type: string; size: string}>>([]);
 
-  const newsItems: Array<{title: string; date: string; content: string}> = [];
+  const [newsItems, setNewsItems] = useState<Array<{title: string; date: string; content: string}>>([]);
 
-  const students: string[] = [];
+  const [students, setStudents] = useState<string[]>([]);
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -33,6 +43,51 @@ const Index = () => {
         setClassPhoto(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Form handlers
+  const handleAddNews = () => {
+    if (newsForm.title && newsForm.content) {
+      const newNews = {
+        title: newsForm.title,
+        content: newsForm.content,
+        date: new Date().toLocaleDateString('ru-RU')
+      };
+      setNewsItems([newNews, ...newsItems]);
+      setNewsForm({ title: '', content: '' });
+    }
+  };
+
+  const handleAddStudent = () => {
+    if (studentForm.name) {
+      setStudents([...students, studentForm.name]);
+      setStudentForm({ name: '' });
+    }
+  };
+
+  const handleAddHomework = () => {
+    if (homeworkForm.subject && homeworkForm.task && homeworkForm.due) {
+      const newHomework = {
+        subject: homeworkForm.subject,
+        task: homeworkForm.task,
+        due: homeworkForm.due,
+        status: 'active'
+      };
+      setHomeworkItems([newHomework, ...homeworkItems]);
+      setHomeworkForm({ subject: '', task: '', due: '' });
+    }
+  };
+
+  const handleAddMaterial = () => {
+    if (materialForm.title && materialForm.file) {
+      const newMaterial = {
+        title: materialForm.title,
+        type: materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE',
+        size: `${Math.round(materialForm.file.size / 1024)} КБ`
+      };
+      setMaterialItems([newMaterial, ...materialItems]);
+      setMaterialForm({ title: '', file: null });
     }
   };
 
@@ -83,7 +138,7 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">0</div>
+            <div className="text-3xl font-bold text-primary mb-2">{students.length}</div>
             <div className="text-gray-600">Учеников в классе</div>
           </CardContent>
         </Card>
@@ -101,10 +156,43 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Новости класса</h2>
-        <Button className="flex items-center space-x-2">
-          <Icon name="Plus" size={18} />
-          <span>Добавить новость</span>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Icon name="Plus" size={18} />
+              <span>Добавить новость</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Добавить новость</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="news-title">Заголовок</Label>
+                <Input
+                  id="news-title"
+                  value={newsForm.title}
+                  onChange={(e) => setNewsForm({...newsForm, title: e.target.value})}
+                  placeholder="Введите заголовок новости"
+                />
+              </div>
+              <div>
+                <Label htmlFor="news-content">Содержание</Label>
+                <Textarea
+                  id="news-content"
+                  value={newsForm.content}
+                  onChange={(e) => setNewsForm({...newsForm, content: e.target.value})}
+                  placeholder="Введите содержание новости"
+                  rows={4}
+                />
+              </div>
+              <Button onClick={handleAddNews} className="w-full">
+                Добавить новость
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="space-y-4">
         {newsItems.length > 0 ? (
@@ -167,10 +255,33 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Ученики класса</h2>
-        <Button className="flex items-center space-x-2">
-          <Icon name="Plus" size={18} />
-          <span>Добавить ученика</span>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Icon name="Plus" size={18} />
+              <span>Добавить ученика</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Добавить ученика</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="student-name">Имя и фамилия</Label>
+                <Input
+                  id="student-name"
+                  value={studentForm.name}
+                  onChange={(e) => setStudentForm({...studentForm, name: e.target.value})}
+                  placeholder="Введите имя и фамилию ученика"
+                />
+              </div>
+              <Button onClick={handleAddStudent} className="w-full">
+                Добавить ученика
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {students.length > 0 ? (
@@ -205,10 +316,52 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Домашние задания</h2>
-        <Button className="flex items-center space-x-2">
-          <Icon name="Plus" size={18} />
-          <span>Добавить задание</span>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Icon name="Plus" size={18} />
+              <span>Добавить задание</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Добавить домашнее задание</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="homework-subject">Предмет</Label>
+                <Input
+                  id="homework-subject"
+                  value={homeworkForm.subject}
+                  onChange={(e) => setHomeworkForm({...homeworkForm, subject: e.target.value})}
+                  placeholder="Введите название предмета"
+                />
+              </div>
+              <div>
+                <Label htmlFor="homework-task">Задание</Label>
+                <Textarea
+                  id="homework-task"
+                  value={homeworkForm.task}
+                  onChange={(e) => setHomeworkForm({...homeworkForm, task: e.target.value})}
+                  placeholder="Описание домашнего задания"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="homework-due">Срок сдачи</Label>
+                <Input
+                  id="homework-due"
+                  type="date"
+                  value={homeworkForm.due}
+                  onChange={(e) => setHomeworkForm({...homeworkForm, due: e.target.value})}
+                />
+              </div>
+              <Button onClick={handleAddHomework} className="w-full">
+                Добавить задание
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="space-y-4">
         {homeworkItems.length > 0 ? (
@@ -249,10 +402,42 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Учебные материалы</h2>
-        <Button className="flex items-center space-x-2">
-          <Icon name="Plus" size={18} />
-          <span>Добавить материал</span>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Icon name="Plus" size={18} />
+              <span>Добавить материал</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Добавить учебный материал</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="material-title">Название материала</Label>
+                <Input
+                  id="material-title"
+                  value={materialForm.title}
+                  onChange={(e) => setMaterialForm({...materialForm, title: e.target.value})}
+                  placeholder="Введите название материала"
+                />
+              </div>
+              <div>
+                <Label htmlFor="material-file">Файл</Label>
+                <Input
+                  id="material-file"
+                  type="file"
+                  onChange={(e) => setMaterialForm({...materialForm, file: e.target.files?.[0] || null})}
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"
+                />
+              </div>
+              <Button onClick={handleAddMaterial} className="w-full">
+                Добавить материал
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {materialItems.length > 0 ? (

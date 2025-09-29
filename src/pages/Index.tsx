@@ -68,7 +68,7 @@ const Index = () => {
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-primary mb-2">30</div>
@@ -79,12 +79,6 @@ const Index = () => {
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-primary mb-2">4.2</div>
             <div className="text-gray-600">Средний балл</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">12</div>
-            <div className="text-gray-600">Активных проектов</div>
           </CardContent>
         </Card>
       </div>

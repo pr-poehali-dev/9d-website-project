@@ -32,15 +32,13 @@ const Index = () => {
         <p className="text-xl text-gray-600">Класс активных и творческих учеников</p>
       </div>
 
-      {/* Фото класса */}
+      {/* Рамка для фото */}
       <div className="flex justify-center">
-        <div className="relative group">
-          <img 
-            src="/img/b048508a-8eeb-4976-a88c-7ab7fadcffef.jpg" 
-            alt="Фото класса 9Д" 
-            className="w-96 h-64 object-cover rounded-lg shadow-lg transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg"></div>
+        <div className="w-96 h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:border-primary hover:bg-blue-50 transition-colors duration-300 cursor-pointer">
+          <div className="text-center text-gray-500">
+            <Icon name="Camera" size={48} className="mx-auto mb-2" />
+            <p className="text-lg">Добавить фото класса</p>
+          </div>
         </div>
       </div>
 

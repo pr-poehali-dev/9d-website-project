@@ -20,11 +20,7 @@ const Index = () => {
 
   const materialItems: Array<{title: string; type: string; size: string}> = [];
 
-  const newsItems = [
-    { title: 'Экскурсия в музей', date: '2024-09-25', content: 'Планируется посещение исторического музея 15 октября' },
-    { title: 'Родительское собрание', date: '2024-09-20', content: 'Состоится 5 октября в 18:00 в актовом зале' },
-    { title: 'Школьная олимпиада', date: '2024-09-15', content: 'Регистрация на олимпиаду по математике открыта до 30 сентября' }
-  ];
+  const newsItems: Array<{title: string; date: string; content: string}> = [];
 
   const students: string[] = [];
 

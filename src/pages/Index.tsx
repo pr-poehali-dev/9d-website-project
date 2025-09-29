@@ -117,8 +117,7 @@ const Index = () => {
             </div>
             <div className="space-y-2">
               <h3 className="text-2xl font-semibold text-gray-900">Кристина Робертовна</h3>
-              <p className="text-gray-600">Учитель математики и физики</p>
-              <p className="text-gray-600">Стаж работы: 15 лет</p>
+              <p className="text-gray-600">Учитель физкультуры</p>
               <div className="flex items-center space-x-4 pt-2">
                 <div className="flex items-center space-x-2">
                   <Icon name="Mail" size={16} className="text-gray-500" />

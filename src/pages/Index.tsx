@@ -77,8 +77,8 @@ const Index = () => {
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-primary mb-2">4.2</div>
-            <div className="text-gray-600">Средний балл</div>
+            <div className="text-xl font-semibold text-primary mb-2">Иванова Елена Сергеевна</div>
+            <div className="text-gray-600">Классный руководитель</div>
           </CardContent>
         </Card>
       </div>

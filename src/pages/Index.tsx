@@ -27,13 +27,27 @@ const Index = () => {
     { id: 'materials', label: 'Учебные материалы', icon: 'FileText' }
   ];
 
-  const [homeworkItems, setHomeworkItems] = useState<Array<{subject: string; task: string; due: string; status: string}>>([]);
+  const [homeworkItems, setHomeworkItems] = useState<Array<{id: number; subject: string; task: string; due: string; status: string}>>([]);
 
-  const [materialItems, setMaterialItems] = useState<Array<{title: string; type: string; size: string}>>([]);
+  const [materialItems, setMaterialItems] = useState<Array<{id: number; title: string; type: string; size: string}>>([]);
 
-  const [newsItems, setNewsItems] = useState<Array<{title: string; date: string; content: string}>>([]);
+  const [newsItems, setNewsItems] = useState<Array<{id: number; title: string; date: string; content: string}>>([]);
 
-  const [students, setStudents] = useState<string[]>([]);
+  const [students, setStudents] = useState<Array<{id: number; name: string}>>([]);
+  
+  const [editingNews, setEditingNews] = useState<{id: number; title: string; content: string} | null>(null);
+  const [editingStudent, setEditingStudent] = useState<{id: number; name: string} | null>(null);
+  const [editingHomework, setEditingHomework] = useState<{id: number; subject: string; task: string; due: string} | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<{id: number; title: string} | null>(null);
+  
+  const [dialogOpen, setDialogOpen] = useState({
+    news: false,
+    student: false,
+    homework: false,
+    material: false
+  });
+  
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,48 +61,175 @@ const Index = () => {
   };
 
   // Form handlers
+  const validateNewsForm = () => {
+    const errors: {[key: string]: string} = {};
+    if (!newsForm.title.trim()) errors.newsTitle = 'Заголовок обязателен';
+    if (newsForm.title.length < 3) errors.newsTitle = 'Заголовок должен содержать минимум 3 символа';
+    if (!newsForm.content.trim()) errors.newsContent = 'Содержание обязательно';
+    if (newsForm.content.length < 10) errors.newsContent = 'Содержание должно содержать минимум 10 символов';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddNews = () => {
-    if (newsForm.title && newsForm.content) {
+    if (!validateNewsForm()) return;
+    
+    if (editingNews) {
+      setNewsItems(newsItems.map(item => 
+        item.id === editingNews.id 
+          ? { ...item, title: newsForm.title, content: newsForm.content }
+          : item
+      ));
+      setEditingNews(null);
+    } else {
       const newNews = {
+        id: Date.now(),
         title: newsForm.title,
         content: newsForm.content,
         date: new Date().toLocaleDateString('ru-RU')
       };
       setNewsItems([newNews, ...newsItems]);
-      setNewsForm({ title: '', content: '' });
     }
+    setNewsForm({ title: '', content: '' });
+    setDialogOpen({...dialogOpen, news: false});
+    setFormErrors({});
+  };
+  
+  const handleEditNews = (news: {id: number; title: string; date: string; content: string}) => {
+    setEditingNews(news);
+    setNewsForm({ title: news.title, content: news.content });
+    setDialogOpen({...dialogOpen, news: true});
+  };
+  
+  const handleDeleteNews = (id: number) => {
+    setNewsItems(newsItems.filter(item => item.id !== id));
+  };
+
+  const validateStudentForm = () => {
+    const errors: {[key: string]: string} = {};
+    if (!studentForm.name.trim()) errors.studentName = 'Имя обязательно';
+    if (studentForm.name.length < 2) errors.studentName = 'Имя должно содержать минимум 2 символа';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleAddStudent = () => {
-    if (studentForm.name) {
-      setStudents([...students, studentForm.name]);
-      setStudentForm({ name: '' });
+    if (!validateStudentForm()) return;
+    
+    if (editingStudent) {
+      setStudents(students.map(item => 
+        item.id === editingStudent.id 
+          ? { ...item, name: studentForm.name }
+          : item
+      ));
+      setEditingStudent(null);
+    } else {
+      const newStudent = {
+        id: Date.now(),
+        name: studentForm.name
+      };
+      setStudents([...students, newStudent]);
     }
+    setStudentForm({ name: '' });
+    setDialogOpen({...dialogOpen, student: false});
+    setFormErrors({});
+  };
+  
+  const handleEditStudent = (student: {id: number; name: string}) => {
+    setEditingStudent(student);
+    setStudentForm({ name: student.name });
+    setDialogOpen({...dialogOpen, student: true});
+  };
+  
+  const handleDeleteStudent = (id: number) => {
+    setStudents(students.filter(item => item.id !== id));
+  };
+
+  const validateHomeworkForm = () => {
+    const errors: {[key: string]: string} = {};
+    if (!homeworkForm.subject.trim()) errors.homeworkSubject = 'Предмет обязателен';
+    if (!homeworkForm.task.trim()) errors.homeworkTask = 'Задание обязательно';
+    if (homeworkForm.task.length < 5) errors.homeworkTask = 'Задание должно содержать минимум 5 символов';
+    if (!homeworkForm.due) errors.homeworkDue = 'Дата сдачи обязательна';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleAddHomework = () => {
-    if (homeworkForm.subject && homeworkForm.task && homeworkForm.due) {
+    if (!validateHomeworkForm()) return;
+    
+    if (editingHomework) {
+      setHomeworkItems(homeworkItems.map(item => 
+        item.id === editingHomework.id 
+          ? { ...item, subject: homeworkForm.subject, task: homeworkForm.task, due: homeworkForm.due }
+          : item
+      ));
+      setEditingHomework(null);
+    } else {
       const newHomework = {
+        id: Date.now(),
         subject: homeworkForm.subject,
         task: homeworkForm.task,
         due: homeworkForm.due,
         status: 'active'
       };
       setHomeworkItems([newHomework, ...homeworkItems]);
-      setHomeworkForm({ subject: '', task: '', due: '' });
     }
+    setHomeworkForm({ subject: '', task: '', due: '' });
+    setDialogOpen({...dialogOpen, homework: false});
+    setFormErrors({});
+  };
+  
+  const handleEditHomework = (homework: {id: number; subject: string; task: string; due: string}) => {
+    setEditingHomework(homework);
+    setHomeworkForm({ subject: homework.subject, task: homework.task, due: homework.due });
+    setDialogOpen({...dialogOpen, homework: true});
+  };
+  
+  const handleDeleteHomework = (id: number) => {
+    setHomeworkItems(homeworkItems.filter(item => item.id !== id));
+  };
+
+  const validateMaterialForm = () => {
+    const errors: {[key: string]: string} = {};
+    if (!materialForm.title.trim()) errors.materialTitle = 'Название обязательно';
+    if (!editingMaterial && !materialForm.file) errors.materialFile = 'Файл обязателен';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleAddMaterial = () => {
-    if (materialForm.title && materialForm.file) {
+    if (!validateMaterialForm()) return;
+    
+    if (editingMaterial) {
+      setMaterialItems(materialItems.map(item => 
+        item.id === editingMaterial.id 
+          ? { ...item, title: materialForm.title }
+          : item
+      ));
+      setEditingMaterial(null);
+    } else if (materialForm.file) {
       const newMaterial = {
+        id: Date.now(),
         title: materialForm.title,
         type: materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE',
         size: `${Math.round(materialForm.file.size / 1024)} КБ`
       };
       setMaterialItems([newMaterial, ...materialItems]);
-      setMaterialForm({ title: '', file: null });
     }
+    setMaterialForm({ title: '', file: null });
+    setDialogOpen({...dialogOpen, material: false});
+    setFormErrors({});
+  };
+  
+  const handleEditMaterial = (material: {id: number; title: string}) => {
+    setEditingMaterial(material);
+    setMaterialForm({ title: material.title, file: null });
+    setDialogOpen({...dialogOpen, material: true});
+  };
+  
+  const handleDeleteMaterial = (id: number) => {
+    setMaterialItems(materialItems.filter(item => item.id !== id));
   };
 
   const renderMainSection = () => (
@@ -156,7 +297,14 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Новости класса</h2>
-        <Dialog>
+        <Dialog open={dialogOpen.news} onOpenChange={(open) => {
+          setDialogOpen({...dialogOpen, news: open});
+          if (!open) {
+            setNewsForm({ title: '', content: '' });
+            setEditingNews(null);
+            setFormErrors({});
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center space-x-2">
               <Icon name="Plus" size={18} />
@@ -165,7 +313,7 @@ const Index = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Добавить новость</DialogTitle>
+              <DialogTitle>{editingNews ? 'Редактировать новость' : 'Добавить новость'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -175,7 +323,9 @@ const Index = () => {
                   value={newsForm.title}
                   onChange={(e) => setNewsForm({...newsForm, title: e.target.value})}
                   placeholder="Введите заголовок новости"
+                  className={formErrors.newsTitle ? 'border-red-500' : ''}
                 />
+                {formErrors.newsTitle && <p className="text-red-500 text-sm mt-1">{formErrors.newsTitle}</p>}
               </div>
               <div>
                 <Label htmlFor="news-content">Содержание</Label>
@@ -185,10 +335,12 @@ const Index = () => {
                   onChange={(e) => setNewsForm({...newsForm, content: e.target.value})}
                   placeholder="Введите содержание новости"
                   rows={4}
+                  className={formErrors.newsContent ? 'border-red-500' : ''}
                 />
+                {formErrors.newsContent && <p className="text-red-500 text-sm mt-1">{formErrors.newsContent}</p>}
               </div>
               <Button onClick={handleAddNews} className="w-full">
-                Добавить новость
+                {editingNews ? 'Сохранить изменения' : 'Добавить новость'}
               </Button>
             </div>
           </DialogContent>
@@ -197,11 +349,19 @@ const Index = () => {
       <div className="space-y-4">
         {newsItems.length > 0 ? (
           newsItems.map((news, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+            <Card key={news.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">{news.title}</CardTitle>
-                  <Badge variant="outline">{news.date}</Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">{news.date}</Badge>
+                    <Button variant="ghost" size="sm" onClick={() => handleEditNews(news)}>
+                      <Icon name="Pencil" size={16} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteNews(news.id)}>
+                      <Icon name="Trash2" size={16} className="text-red-500" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -255,7 +415,14 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Ученики класса</h2>
-        <Dialog>
+        <Dialog open={dialogOpen.student} onOpenChange={(open) => {
+          setDialogOpen({...dialogOpen, student: open});
+          if (!open) {
+            setStudentForm({ name: '' });
+            setEditingStudent(null);
+            setFormErrors({});
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center space-x-2">
               <Icon name="Plus" size={18} />
@@ -264,7 +431,7 @@ const Index = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Добавить ученика</DialogTitle>
+              <DialogTitle>{editingStudent ? 'Редактировать ученика' : 'Добавить ученика'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -274,10 +441,12 @@ const Index = () => {
                   value={studentForm.name}
                   onChange={(e) => setStudentForm({...studentForm, name: e.target.value})}
                   placeholder="Введите имя и фамилию ученика"
+                  className={formErrors.studentName ? 'border-red-500' : ''}
                 />
+                {formErrors.studentName && <p className="text-red-500 text-sm mt-1">{formErrors.studentName}</p>}
               </div>
               <Button onClick={handleAddStudent} className="w-full">
-                Добавить ученика
+                {editingStudent ? 'Сохранить изменения' : 'Добавить ученика'}
               </Button>
             </div>
           </DialogContent>
@@ -286,13 +455,23 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {students.length > 0 ? (
           students.map((student, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow duration-300">
+            <Card key={student.id} className="hover:shadow-md transition-shadow duration-300">
               <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold">{index + 1}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold">{index + 1}</span>
+                    </div>
+                    <span className="font-medium text-gray-900">{student.name}</span>
                   </div>
-                  <span className="font-medium text-gray-900">{student}</span>
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditStudent(student)}>
+                      <Icon name="Pencil" size={16} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
+                      <Icon name="Trash2" size={16} className="text-red-500" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -316,7 +495,14 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Домашние задания</h2>
-        <Dialog>
+        <Dialog open={dialogOpen.homework} onOpenChange={(open) => {
+          setDialogOpen({...dialogOpen, homework: open});
+          if (!open) {
+            setHomeworkForm({ subject: '', task: '', due: '' });
+            setEditingHomework(null);
+            setFormErrors({});
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center space-x-2">
               <Icon name="Plus" size={18} />
@@ -325,7 +511,7 @@ const Index = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Добавить домашнее задание</DialogTitle>
+              <DialogTitle>{editingHomework ? 'Редактировать задание' : 'Добавить домашнее задание'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -335,7 +521,9 @@ const Index = () => {
                   value={homeworkForm.subject}
                   onChange={(e) => setHomeworkForm({...homeworkForm, subject: e.target.value})}
                   placeholder="Введите название предмета"
+                  className={formErrors.homeworkSubject ? 'border-red-500' : ''}
                 />
+                {formErrors.homeworkSubject && <p className="text-red-500 text-sm mt-1">{formErrors.homeworkSubject}</p>}
               </div>
               <div>
                 <Label htmlFor="homework-task">Задание</Label>
@@ -345,7 +533,9 @@ const Index = () => {
                   onChange={(e) => setHomeworkForm({...homeworkForm, task: e.target.value})}
                   placeholder="Описание домашнего задания"
                   rows={3}
+                  className={formErrors.homeworkTask ? 'border-red-500' : ''}
                 />
+                {formErrors.homeworkTask && <p className="text-red-500 text-sm mt-1">{formErrors.homeworkTask}</p>}
               </div>
               <div>
                 <Label htmlFor="homework-due">Срок сдачи</Label>
@@ -354,10 +544,12 @@ const Index = () => {
                   type="date"
                   value={homeworkForm.due}
                   onChange={(e) => setHomeworkForm({...homeworkForm, due: e.target.value})}
+                  className={formErrors.homeworkDue ? 'border-red-500' : ''}
                 />
+                {formErrors.homeworkDue && <p className="text-red-500 text-sm mt-1">{formErrors.homeworkDue}</p>}
               </div>
               <Button onClick={handleAddHomework} className="w-full">
-                Добавить задание
+                {editingHomework ? 'Сохранить изменения' : 'Добавить задание'}
               </Button>
             </div>
           </DialogContent>
@@ -365,17 +557,25 @@ const Index = () => {
       </div>
       <div className="space-y-4">
         {homeworkItems.length > 0 ? (
-          homeworkItems.map((homework, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+          homeworkItems.map((homework) => (
+            <Card key={homework.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg font-semibold text-gray-900">{homework.subject}</h3>
-                  <Badge 
-                    variant={homework.status === 'overdue' ? 'destructive' : homework.status === 'upcoming' ? 'secondary' : 'default'}
-                  >
-                    {homework.status === 'overdue' ? 'Просрочено' : 
-                     homework.status === 'upcoming' ? 'Скоро' : 'Активно'}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge 
+                      variant={homework.status === 'overdue' ? 'destructive' : homework.status === 'upcoming' ? 'secondary' : 'default'}
+                    >
+                      {homework.status === 'overdue' ? 'Просрочено' : 
+                       homework.status === 'upcoming' ? 'Скоро' : 'Активно'}
+                    </Badge>
+                    <Button variant="ghost" size="sm" onClick={() => handleEditHomework(homework)}>
+                      <Icon name="Pencil" size={16} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteHomework(homework.id)}>
+                      <Icon name="Trash2" size={16} className="text-red-500" />
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-gray-600 mb-3">{homework.task}</p>
                 <div className="flex items-center text-sm text-gray-500">
@@ -402,7 +602,14 @@ const Index = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Учебные материалы</h2>
-        <Dialog>
+        <Dialog open={dialogOpen.material} onOpenChange={(open) => {
+          setDialogOpen({...dialogOpen, material: open});
+          if (!open) {
+            setMaterialForm({ title: '', file: null });
+            setEditingMaterial(null);
+            setFormErrors({});
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="flex items-center space-x-2">
               <Icon name="Plus" size={18} />
@@ -411,7 +618,7 @@ const Index = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Добавить учебный материал</DialogTitle>
+              <DialogTitle>{editingMaterial ? 'Редактировать материал' : 'Добавить учебный материал'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -421,19 +628,25 @@ const Index = () => {
                   value={materialForm.title}
                   onChange={(e) => setMaterialForm({...materialForm, title: e.target.value})}
                   placeholder="Введите название материала"
+                  className={formErrors.materialTitle ? 'border-red-500' : ''}
                 />
+                {formErrors.materialTitle && <p className="text-red-500 text-sm mt-1">{formErrors.materialTitle}</p>}
               </div>
-              <div>
-                <Label htmlFor="material-file">Файл</Label>
-                <Input
-                  id="material-file"
-                  type="file"
-                  onChange={(e) => setMaterialForm({...materialForm, file: e.target.files?.[0] || null})}
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"
-                />
-              </div>
+              {!editingMaterial && (
+                <div>
+                  <Label htmlFor="material-file">Файл</Label>
+                  <Input
+                    id="material-file"
+                    type="file"
+                    onChange={(e) => setMaterialForm({...materialForm, file: e.target.files?.[0] || null})}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"
+                    className={formErrors.materialFile ? 'border-red-500' : ''}
+                  />
+                  {formErrors.materialFile && <p className="text-red-500 text-sm mt-1">{formErrors.materialFile}</p>}
+                </div>
+              )}
               <Button onClick={handleAddMaterial} className="w-full">
-                Добавить материал
+                {editingMaterial ? 'Сохранить изменения' : 'Добавить материал'}
               </Button>
             </div>
           </DialogContent>
@@ -441,8 +654,8 @@ const Index = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {materialItems.length > 0 ? (
-          materialItems.map((material, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+          materialItems.map((material) => (
+            <Card key={material.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
@@ -456,7 +669,14 @@ const Index = () => {
                       <span>{material.size}</span>
                     </div>
                   </div>
-                  <Icon name="Download" size={20} className="text-gray-400" />
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditMaterial(material)}>
+                      <Icon name="Pencil" size={16} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(material.id)}>
+                      <Icon name="Trash2" size={16} className="text-red-500" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import MainSection from '@/components/sections/MainSection';
@@ -10,8 +10,18 @@ import MaterialsSection from '@/components/sections/MaterialsSection';
 import PasswordDialog from '@/components/PasswordDialog';
 
 const Index = () => {
+  const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error);
+      return defaultValue;
+    }
+  };
+
   const [activeSection, setActiveSection] = useState('main');
-  const [classPhoto, setClassPhoto] = useState<string | null>(null);
+  const [classPhoto, setClassPhoto] = useState<string | null>(() => loadFromLocalStorage('classPhoto', null));
   
   const [newsForm, setNewsForm] = useState({ title: '', content: '' });
   const [studentForm, setStudentForm] = useState({ name: '' });
@@ -27,10 +37,18 @@ const Index = () => {
     { id: 'materials', label: 'Учебные материалы', icon: 'FileText' }
   ];
 
-  const [homeworkItems, setHomeworkItems] = useState<Array<{id: number; subject: string; task: string; due: string; status: string}>>([]);
-  const [materialItems, setMaterialItems] = useState<Array<{id: number; title: string; type: string; size: string}>>([]);
-  const [newsItems, setNewsItems] = useState<Array<{id: number; title: string; date: string; content: string}>>([]);
-  const [students, setStudents] = useState<Array<{id: number; name: string}>>([]);
+  const [homeworkItems, setHomeworkItems] = useState<Array<{id: number; subject: string; task: string; due: string; status: string}>>(() => 
+    loadFromLocalStorage('homeworkItems', [])
+  );
+  const [materialItems, setMaterialItems] = useState<Array<{id: number; title: string; type: string; size: string}>>(() => 
+    loadFromLocalStorage('materialItems', [])
+  );
+  const [newsItems, setNewsItems] = useState<Array<{id: number; title: string; date: string; content: string}>>(() => 
+    loadFromLocalStorage('newsItems', [])
+  );
+  const [students, setStudents] = useState<Array<{id: number; name: string}>>(() => 
+    loadFromLocalStorage('students', [])
+  );
   
   const [editingNews, setEditingNews] = useState<{id: number; title: string; content: string} | null>(null);
   const [editingStudent, setEditingStudent] = useState<{id: number; name: string} | null>(null);
@@ -52,6 +70,26 @@ const Index = () => {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   
   const ADMIN_PASSWORD = '6745Q-';
+
+  useEffect(() => {
+    localStorage.setItem('classPhoto', JSON.stringify(classPhoto));
+  }, [classPhoto]);
+
+  useEffect(() => {
+    localStorage.setItem('newsItems', JSON.stringify(newsItems));
+  }, [newsItems]);
+
+  useEffect(() => {
+    localStorage.setItem('students', JSON.stringify(students));
+  }, [students]);
+
+  useEffect(() => {
+    localStorage.setItem('homeworkItems', JSON.stringify(homeworkItems));
+  }, [homeworkItems]);
+
+  useEffect(() => {
+    localStorage.setItem('materialItems', JSON.stringify(materialItems));
+  }, [materialItems]);
   
   const checkPassword = (action: () => void) => {
     setPendingAction(() => action);

@@ -48,6 +48,32 @@ const Index = () => {
   });
   
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  
+  const [passwordDialog, setPasswordDialog] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  
+  const ADMIN_PASSWORD = '6745Q-';
+  
+  const checkPassword = (action: () => void) => {
+    setPendingAction(() => action);
+    setPasswordDialog(true);
+    setPasswordInput('');
+    setPasswordError('');
+  };
+  
+  const confirmPassword = () => {
+    if (passwordInput === ADMIN_PASSWORD) {
+      if (pendingAction) pendingAction();
+      setPasswordDialog(false);
+      setPasswordInput('');
+      setPasswordError('');
+      setPendingAction(null);
+    } else {
+      setPasswordError('Неверный пароль');
+    }
+  };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -74,35 +100,43 @@ const Index = () => {
   const handleAddNews = () => {
     if (!validateNewsForm()) return;
     
-    if (editingNews) {
-      setNewsItems(newsItems.map(item => 
-        item.id === editingNews.id 
-          ? { ...item, title: newsForm.title, content: newsForm.content }
-          : item
-      ));
-      setEditingNews(null);
-    } else {
-      const newNews = {
-        id: Date.now(),
-        title: newsForm.title,
-        content: newsForm.content,
-        date: new Date().toLocaleDateString('ru-RU')
-      };
-      setNewsItems([newNews, ...newsItems]);
-    }
-    setNewsForm({ title: '', content: '' });
-    setDialogOpen({...dialogOpen, news: false});
-    setFormErrors({});
+    const executeAction = () => {
+      if (editingNews) {
+        setNewsItems(newsItems.map(item => 
+          item.id === editingNews.id 
+            ? { ...item, title: newsForm.title, content: newsForm.content }
+            : item
+        ));
+        setEditingNews(null);
+      } else {
+        const newNews = {
+          id: Date.now(),
+          title: newsForm.title,
+          content: newsForm.content,
+          date: new Date().toLocaleDateString('ru-RU')
+        };
+        setNewsItems([newNews, ...newsItems]);
+      }
+      setNewsForm({ title: '', content: '' });
+      setDialogOpen({...dialogOpen, news: false});
+      setFormErrors({});
+    };
+    
+    checkPassword(executeAction);
   };
   
   const handleEditNews = (news: {id: number; title: string; date: string; content: string}) => {
-    setEditingNews(news);
-    setNewsForm({ title: news.title, content: news.content });
-    setDialogOpen({...dialogOpen, news: true});
+    checkPassword(() => {
+      setEditingNews(news);
+      setNewsForm({ title: news.title, content: news.content });
+      setDialogOpen({...dialogOpen, news: true});
+    });
   };
   
   const handleDeleteNews = (id: number) => {
-    setNewsItems(newsItems.filter(item => item.id !== id));
+    checkPassword(() => {
+      setNewsItems(newsItems.filter(item => item.id !== id));
+    });
   };
 
   const validateStudentForm = () => {
@@ -116,33 +150,41 @@ const Index = () => {
   const handleAddStudent = () => {
     if (!validateStudentForm()) return;
     
-    if (editingStudent) {
-      setStudents(students.map(item => 
-        item.id === editingStudent.id 
-          ? { ...item, name: studentForm.name }
-          : item
-      ));
-      setEditingStudent(null);
-    } else {
-      const newStudent = {
-        id: Date.now(),
-        name: studentForm.name
-      };
-      setStudents([...students, newStudent]);
-    }
-    setStudentForm({ name: '' });
-    setDialogOpen({...dialogOpen, student: false});
-    setFormErrors({});
+    const executeAction = () => {
+      if (editingStudent) {
+        setStudents(students.map(item => 
+          item.id === editingStudent.id 
+            ? { ...item, name: studentForm.name }
+            : item
+        ));
+        setEditingStudent(null);
+      } else {
+        const newStudent = {
+          id: Date.now(),
+          name: studentForm.name
+        };
+        setStudents([...students, newStudent]);
+      }
+      setStudentForm({ name: '' });
+      setDialogOpen({...dialogOpen, student: false});
+      setFormErrors({});
+    };
+    
+    checkPassword(executeAction);
   };
   
   const handleEditStudent = (student: {id: number; name: string}) => {
-    setEditingStudent(student);
-    setStudentForm({ name: student.name });
-    setDialogOpen({...dialogOpen, student: true});
+    checkPassword(() => {
+      setEditingStudent(student);
+      setStudentForm({ name: student.name });
+      setDialogOpen({...dialogOpen, student: true});
+    });
   };
   
   const handleDeleteStudent = (id: number) => {
-    setStudents(students.filter(item => item.id !== id));
+    checkPassword(() => {
+      setStudents(students.filter(item => item.id !== id));
+    });
   };
 
   const validateHomeworkForm = () => {
@@ -158,36 +200,44 @@ const Index = () => {
   const handleAddHomework = () => {
     if (!validateHomeworkForm()) return;
     
-    if (editingHomework) {
-      setHomeworkItems(homeworkItems.map(item => 
-        item.id === editingHomework.id 
-          ? { ...item, subject: homeworkForm.subject, task: homeworkForm.task, due: homeworkForm.due }
-          : item
-      ));
-      setEditingHomework(null);
-    } else {
-      const newHomework = {
-        id: Date.now(),
-        subject: homeworkForm.subject,
-        task: homeworkForm.task,
-        due: homeworkForm.due,
-        status: 'active'
-      };
-      setHomeworkItems([newHomework, ...homeworkItems]);
-    }
-    setHomeworkForm({ subject: '', task: '', due: '' });
-    setDialogOpen({...dialogOpen, homework: false});
-    setFormErrors({});
+    const executeAction = () => {
+      if (editingHomework) {
+        setHomeworkItems(homeworkItems.map(item => 
+          item.id === editingHomework.id 
+            ? { ...item, subject: homeworkForm.subject, task: homeworkForm.task, due: homeworkForm.due }
+            : item
+        ));
+        setEditingHomework(null);
+      } else {
+        const newHomework = {
+          id: Date.now(),
+          subject: homeworkForm.subject,
+          task: homeworkForm.task,
+          due: homeworkForm.due,
+          status: 'active'
+        };
+        setHomeworkItems([newHomework, ...homeworkItems]);
+      }
+      setHomeworkForm({ subject: '', task: '', due: '' });
+      setDialogOpen({...dialogOpen, homework: false});
+      setFormErrors({});
+    };
+    
+    checkPassword(executeAction);
   };
   
   const handleEditHomework = (homework: {id: number; subject: string; task: string; due: string}) => {
-    setEditingHomework(homework);
-    setHomeworkForm({ subject: homework.subject, task: homework.task, due: homework.due });
-    setDialogOpen({...dialogOpen, homework: true});
+    checkPassword(() => {
+      setEditingHomework(homework);
+      setHomeworkForm({ subject: homework.subject, task: homework.task, due: homework.due });
+      setDialogOpen({...dialogOpen, homework: true});
+    });
   };
   
   const handleDeleteHomework = (id: number) => {
-    setHomeworkItems(homeworkItems.filter(item => item.id !== id));
+    checkPassword(() => {
+      setHomeworkItems(homeworkItems.filter(item => item.id !== id));
+    });
   };
 
   const validateMaterialForm = () => {
@@ -201,35 +251,43 @@ const Index = () => {
   const handleAddMaterial = () => {
     if (!validateMaterialForm()) return;
     
-    if (editingMaterial) {
-      setMaterialItems(materialItems.map(item => 
-        item.id === editingMaterial.id 
-          ? { ...item, title: materialForm.title }
-          : item
-      ));
-      setEditingMaterial(null);
-    } else if (materialForm.file) {
-      const newMaterial = {
-        id: Date.now(),
-        title: materialForm.title,
-        type: materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE',
-        size: `${Math.round(materialForm.file.size / 1024)} КБ`
-      };
-      setMaterialItems([newMaterial, ...materialItems]);
-    }
-    setMaterialForm({ title: '', file: null });
-    setDialogOpen({...dialogOpen, material: false});
-    setFormErrors({});
+    const executeAction = () => {
+      if (editingMaterial) {
+        setMaterialItems(materialItems.map(item => 
+          item.id === editingMaterial.id 
+            ? { ...item, title: materialForm.title }
+            : item
+        ));
+        setEditingMaterial(null);
+      } else if (materialForm.file) {
+        const newMaterial = {
+          id: Date.now(),
+          title: materialForm.title,
+          type: materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE',
+          size: `${Math.round(materialForm.file.size / 1024)} КБ`
+        };
+        setMaterialItems([newMaterial, ...materialItems]);
+      }
+      setMaterialForm({ title: '', file: null });
+      setDialogOpen({...dialogOpen, material: false});
+      setFormErrors({});
+    };
+    
+    checkPassword(executeAction);
   };
   
   const handleEditMaterial = (material: {id: number; title: string}) => {
-    setEditingMaterial(material);
-    setMaterialForm({ title: material.title, file: null });
-    setDialogOpen({...dialogOpen, material: true});
+    checkPassword(() => {
+      setEditingMaterial(material);
+      setMaterialForm({ title: material.title, file: null });
+      setDialogOpen({...dialogOpen, material: true});
+    });
   };
   
   const handleDeleteMaterial = (id: number) => {
-    setMaterialItems(materialItems.filter(item => item.id !== id));
+    checkPassword(() => {
+      setMaterialItems(materialItems.filter(item => item.id !== id));
+    });
   };
 
   const renderMainSection = () => (
@@ -734,6 +792,48 @@ const Index = () => {
           {renderContent()}
         </div>
       </main>
+      
+      {/* Диалог ввода пароля */}
+      <Dialog open={passwordDialog} onOpenChange={setPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Введите пароль администратора</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                id="password"
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmPassword()}
+                placeholder="Введите пароль"
+                className={passwordError ? 'border-red-500' : ''}
+                autoFocus
+              />
+              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+            </div>
+            <div className="flex space-x-2">
+              <Button onClick={confirmPassword} className="flex-1">
+                Подтвердить
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setPasswordDialog(false);
+                  setPasswordInput('');
+                  setPasswordError('');
+                  setPendingAction(null);
+                }} 
+                className="flex-1"
+              >
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

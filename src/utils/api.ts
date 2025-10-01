@@ -2,6 +2,7 @@ import funcUrls from '../../backend/func2url.json';
 
 const API_URL = funcUrls.api;
 const VERIFY_PASSWORD_URL = funcUrls['verify-password'];
+const PASSWORD = atob('Njc0NVEt');
 
 export const api = {
   async fetchAllData() {

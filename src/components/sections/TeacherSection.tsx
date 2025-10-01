@@ -14,16 +14,6 @@ const TeacherSection = () => {
             <div className="space-y-2">
               <h3 className="text-2xl font-semibold text-gray-900">Кристина Робертовна</h3>
               <p className="text-gray-600">Учитель физкультуры</p>
-              <div className="flex items-center space-x-4 pt-2">
-                <div className="flex items-center space-x-2">
-                  <Icon name="Mail" size={16} className="text-gray-500" />
-                  <span className="text-sm text-gray-600">kristina@school.edu</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Icon name="Phone" size={16} className="text-gray-500" />
-                  <span className="text-sm text-gray-600">+7 (999) 123-45-67</span>
-                </div>
-              </div>
             </div>
           </div>
         </CardContent>

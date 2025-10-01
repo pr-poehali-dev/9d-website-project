@@ -1,7 +1,7 @@
 import funcUrls from '../../backend/func2url.json';
 
 const API_URL = funcUrls.api;
-const PASSWORD = '6745Q-';
+const VERIFY_PASSWORD_URL = funcUrls['verify-password'];
 
 export const api = {
   async fetchAllData() {
@@ -262,5 +262,22 @@ export const api = {
     }
     
     return response.json();
+  },
+
+  async verifyPassword(password: string) {
+    const response = await fetch(VERIFY_PASSWORD_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to verify password');
+    }
+    
+    const data = await response.json();
+    return data.valid;
   }
 };

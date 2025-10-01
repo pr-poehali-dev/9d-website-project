@@ -52,8 +52,6 @@ const Index = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-  
-  const ADMIN_PASSWORD = '6745Q-';
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,15 +79,22 @@ const Index = () => {
     setPasswordError('');
   };
   
-  const confirmPassword = () => {
-    if (passwordInput === ADMIN_PASSWORD) {
-      if (pendingAction) pendingAction();
-      setPasswordDialog(false);
-      setPasswordInput('');
-      setPasswordError('');
-      setPendingAction(null);
-    } else {
-      setPasswordError('Неверный пароль');
+  const confirmPassword = async () => {
+    try {
+      const isValid = await api.verifyPassword(passwordInput);
+      
+      if (isValid) {
+        if (pendingAction) pendingAction();
+        setPasswordDialog(false);
+        setPasswordInput('');
+        setPasswordError('');
+        setPendingAction(null);
+      } else {
+        setPasswordError('Неверный пароль');
+      }
+    } catch (error) {
+      console.error('Error verifying password:', error);
+      setPasswordError('Ошибка проверки пароля');
     }
   };
 

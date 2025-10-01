@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Test GET all data",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-Password": "6745Q-"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "Test unauthorized access",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "Неверный пароль"
+      }
+    }
+  ]
+}

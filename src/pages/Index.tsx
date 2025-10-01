@@ -8,20 +8,11 @@ import StudentsSection from '@/components/sections/StudentsSection';
 import HomeworkSection from '@/components/sections/HomeworkSection';
 import MaterialsSection from '@/components/sections/MaterialsSection';
 import PasswordDialog from '@/components/PasswordDialog';
+import { api } from '@/utils/api';
 
 const Index = () => {
-  const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-      console.error(`Error loading ${key} from localStorage:`, error);
-      return defaultValue;
-    }
-  };
-
   const [activeSection, setActiveSection] = useState('main');
-  const [classPhoto, setClassPhoto] = useState<string | null>(() => loadFromLocalStorage('classPhoto', null));
+  const [classPhoto, setClassPhoto] = useState<string | null>(null);
   
   const [newsForm, setNewsForm] = useState({ title: '', content: '' });
   const [studentForm, setStudentForm] = useState({ name: '' });
@@ -37,18 +28,11 @@ const Index = () => {
     { id: 'materials', label: 'Учебные материалы', icon: 'FileText' }
   ];
 
-  const [homeworkItems, setHomeworkItems] = useState<Array<{id: number; subject: string; task: string; due: string; status: string}>>(() => 
-    loadFromLocalStorage('homeworkItems', [])
-  );
-  const [materialItems, setMaterialItems] = useState<Array<{id: number; title: string; type: string; size: string}>>(() => 
-    loadFromLocalStorage('materialItems', [])
-  );
-  const [newsItems, setNewsItems] = useState<Array<{id: number; title: string; date: string; content: string}>>(() => 
-    loadFromLocalStorage('newsItems', [])
-  );
-  const [students, setStudents] = useState<Array<{id: number; name: string}>>(() => 
-    loadFromLocalStorage('students', [])
-  );
+  const [homeworkItems, setHomeworkItems] = useState<Array<{id: number; subject: string; task: string; due: string; status: string}>>([]);
+  const [materialItems, setMaterialItems] = useState<Array<{id: number; title: string; type: string; size: string}>>([]);
+  const [newsItems, setNewsItems] = useState<Array<{id: number; title: string; date: string; content: string}>>([]);
+  const [students, setStudents] = useState<Array<{id: number; name: string}>>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [editingNews, setEditingNews] = useState<{id: number; title: string; content: string} | null>(null);
   const [editingStudent, setEditingStudent] = useState<{id: number; name: string} | null>(null);
@@ -72,24 +56,23 @@ const Index = () => {
   const ADMIN_PASSWORD = '6745Q-';
 
   useEffect(() => {
-    localStorage.setItem('classPhoto', JSON.stringify(classPhoto));
-  }, [classPhoto]);
-
-  useEffect(() => {
-    localStorage.setItem('newsItems', JSON.stringify(newsItems));
-  }, [newsItems]);
-
-  useEffect(() => {
-    localStorage.setItem('students', JSON.stringify(students));
-  }, [students]);
-
-  useEffect(() => {
-    localStorage.setItem('homeworkItems', JSON.stringify(homeworkItems));
-  }, [homeworkItems]);
-
-  useEffect(() => {
-    localStorage.setItem('materialItems', JSON.stringify(materialItems));
-  }, [materialItems]);
+    const loadData = async () => {
+      try {
+        const data = await api.fetchAllData();
+        setClassPhoto(data.classPhoto);
+        setNewsItems(data.newsItems);
+        setStudents(data.students);
+        setHomeworkItems(data.homeworkItems);
+        setMaterialItems(data.materialItems);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
   
   const checkPassword = (action: () => void) => {
     setPendingAction(() => action);
@@ -110,12 +93,18 @@ const Index = () => {
     }
   };
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setClassPhoto(e.target?.result as string);
+      reader.onload = async (e) => {
+        const photoUrl = e.target?.result as string;
+        try {
+          await api.updatePhoto(photoUrl);
+          setClassPhoto(photoUrl);
+        } catch (error) {
+          console.error('Error updating photo:', error);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -134,26 +123,33 @@ const Index = () => {
   const handleAddNews = () => {
     if (!validateNewsForm()) return;
     
-    const executeAction = () => {
-      if (editingNews) {
-        setNewsItems(newsItems.map(item => 
-          item.id === editingNews.id 
-            ? { ...item, title: newsForm.title, content: newsForm.content }
-            : item
-        ));
-        setEditingNews(null);
-      } else {
-        const newNews = {
-          id: Date.now(),
-          title: newsForm.title,
-          content: newsForm.content,
-          date: new Date().toLocaleDateString('ru-RU')
-        };
-        setNewsItems([newNews, ...newsItems]);
+    const executeAction = async () => {
+      try {
+        if (editingNews) {
+          await api.updateNews(editingNews.id, newsForm.title, newsForm.content);
+          setNewsItems(newsItems.map(item => 
+            item.id === editingNews.id 
+              ? { ...item, title: newsForm.title, content: newsForm.content }
+              : item
+          ));
+          setEditingNews(null);
+        } else {
+          const date = new Date().toLocaleDateString('ru-RU');
+          const response = await api.addNews(newsForm.title, newsForm.content, date);
+          const newNews = {
+            id: response.id,
+            title: newsForm.title,
+            content: newsForm.content,
+            date: date
+          };
+          setNewsItems([newNews, ...newsItems]);
+        }
+        setNewsForm({ title: '', content: '' });
+        setDialogOpen({...dialogOpen, news: false});
+        setFormErrors({});
+      } catch (error) {
+        console.error('Error saving news:', error);
       }
-      setNewsForm({ title: '', content: '' });
-      setDialogOpen({...dialogOpen, news: false});
-      setFormErrors({});
     };
     
     checkPassword(executeAction);
@@ -168,8 +164,13 @@ const Index = () => {
   };
   
   const handleDeleteNews = (id: number) => {
-    checkPassword(() => {
-      setNewsItems(newsItems.filter(item => item.id !== id));
+    checkPassword(async () => {
+      try {
+        await api.deleteNews(id);
+        setNewsItems(newsItems.filter(item => item.id !== id));
+      } catch (error) {
+        console.error('Error deleting news:', error);
+      }
     });
   };
 
@@ -184,24 +185,30 @@ const Index = () => {
   const handleAddStudent = () => {
     if (!validateStudentForm()) return;
     
-    const executeAction = () => {
-      if (editingStudent) {
-        setStudents(students.map(item => 
-          item.id === editingStudent.id 
-            ? { ...item, name: studentForm.name }
-            : item
-        ));
-        setEditingStudent(null);
-      } else {
-        const newStudent = {
-          id: Date.now(),
-          name: studentForm.name
-        };
-        setStudents([...students, newStudent]);
+    const executeAction = async () => {
+      try {
+        if (editingStudent) {
+          await api.updateStudent(editingStudent.id, studentForm.name);
+          setStudents(students.map(item => 
+            item.id === editingStudent.id 
+              ? { ...item, name: studentForm.name }
+              : item
+          ));
+          setEditingStudent(null);
+        } else {
+          const response = await api.addStudent(studentForm.name);
+          const newStudent = {
+            id: response.id,
+            name: studentForm.name
+          };
+          setStudents([...students, newStudent]);
+        }
+        setStudentForm({ name: '' });
+        setDialogOpen({...dialogOpen, student: false});
+        setFormErrors({});
+      } catch (error) {
+        console.error('Error saving student:', error);
       }
-      setStudentForm({ name: '' });
-      setDialogOpen({...dialogOpen, student: false});
-      setFormErrors({});
     };
     
     checkPassword(executeAction);
@@ -216,8 +223,13 @@ const Index = () => {
   };
   
   const handleDeleteStudent = (id: number) => {
-    checkPassword(() => {
-      setStudents(students.filter(item => item.id !== id));
+    checkPassword(async () => {
+      try {
+        await api.deleteStudent(id);
+        setStudents(students.filter(item => item.id !== id));
+      } catch (error) {
+        console.error('Error deleting student:', error);
+      }
     });
   };
 
@@ -234,27 +246,33 @@ const Index = () => {
   const handleAddHomework = () => {
     if (!validateHomeworkForm()) return;
     
-    const executeAction = () => {
-      if (editingHomework) {
-        setHomeworkItems(homeworkItems.map(item => 
-          item.id === editingHomework.id 
-            ? { ...item, subject: homeworkForm.subject, task: homeworkForm.task, due: homeworkForm.due }
-            : item
-        ));
-        setEditingHomework(null);
-      } else {
-        const newHomework = {
-          id: Date.now(),
-          subject: homeworkForm.subject,
-          task: homeworkForm.task,
-          due: homeworkForm.due,
-          status: 'active'
-        };
-        setHomeworkItems([newHomework, ...homeworkItems]);
+    const executeAction = async () => {
+      try {
+        if (editingHomework) {
+          await api.updateHomework(editingHomework.id, homeworkForm.subject, homeworkForm.task, homeworkForm.due, 'active');
+          setHomeworkItems(homeworkItems.map(item => 
+            item.id === editingHomework.id 
+              ? { ...item, subject: homeworkForm.subject, task: homeworkForm.task, due: homeworkForm.due }
+              : item
+          ));
+          setEditingHomework(null);
+        } else {
+          const response = await api.addHomework(homeworkForm.subject, homeworkForm.task, homeworkForm.due, 'active');
+          const newHomework = {
+            id: response.id,
+            subject: homeworkForm.subject,
+            task: homeworkForm.task,
+            due: homeworkForm.due,
+            status: 'active'
+          };
+          setHomeworkItems([newHomework, ...homeworkItems]);
+        }
+        setHomeworkForm({ subject: '', task: '', due: '' });
+        setDialogOpen({...dialogOpen, homework: false});
+        setFormErrors({});
+      } catch (error) {
+        console.error('Error saving homework:', error);
       }
-      setHomeworkForm({ subject: '', task: '', due: '' });
-      setDialogOpen({...dialogOpen, homework: false});
-      setFormErrors({});
     };
     
     checkPassword(executeAction);
@@ -269,8 +287,13 @@ const Index = () => {
   };
   
   const handleDeleteHomework = (id: number) => {
-    checkPassword(() => {
-      setHomeworkItems(homeworkItems.filter(item => item.id !== id));
+    checkPassword(async () => {
+      try {
+        await api.deleteHomework(id);
+        setHomeworkItems(homeworkItems.filter(item => item.id !== id));
+      } catch (error) {
+        console.error('Error deleting homework:', error);
+      }
     });
   };
 
@@ -285,26 +308,34 @@ const Index = () => {
   const handleAddMaterial = () => {
     if (!validateMaterialForm()) return;
     
-    const executeAction = () => {
-      if (editingMaterial) {
-        setMaterialItems(materialItems.map(item => 
-          item.id === editingMaterial.id 
-            ? { ...item, title: materialForm.title }
-            : item
-        ));
-        setEditingMaterial(null);
-      } else if (materialForm.file) {
-        const newMaterial = {
-          id: Date.now(),
-          title: materialForm.title,
-          type: materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE',
-          size: `${Math.round(materialForm.file.size / 1024)} КБ`
-        };
-        setMaterialItems([newMaterial, ...materialItems]);
+    const executeAction = async () => {
+      try {
+        if (editingMaterial) {
+          await api.updateMaterial(editingMaterial.id, materialForm.title);
+          setMaterialItems(materialItems.map(item => 
+            item.id === editingMaterial.id 
+              ? { ...item, title: materialForm.title }
+              : item
+          ));
+          setEditingMaterial(null);
+        } else if (materialForm.file) {
+          const type = materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE';
+          const size = `${Math.round(materialForm.file.size / 1024)} КБ`;
+          const response = await api.addMaterial(materialForm.title, type, size);
+          const newMaterial = {
+            id: response.id,
+            title: materialForm.title,
+            type: type,
+            size: size
+          };
+          setMaterialItems([newMaterial, ...materialItems]);
+        }
+        setMaterialForm({ title: '', file: null });
+        setDialogOpen({...dialogOpen, material: false});
+        setFormErrors({});
+      } catch (error) {
+        console.error('Error saving material:', error);
       }
-      setMaterialForm({ title: '', file: null });
-      setDialogOpen({...dialogOpen, material: false});
-      setFormErrors({});
     };
     
     checkPassword(executeAction);
@@ -319,8 +350,13 @@ const Index = () => {
   };
   
   const handleDeleteMaterial = (id: number) => {
-    checkPassword(() => {
-      setMaterialItems(materialItems.filter(item => item.id !== id));
+    checkPassword(async () => {
+      try {
+        await api.deleteMaterial(id);
+        setMaterialItems(materialItems.filter(item => item.id !== id));
+      } catch (error) {
+        console.error('Error deleting material:', error);
+      }
     });
   };
 
@@ -406,6 +442,17 @@ const Index = () => {
         );
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка данных...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -17,7 +17,10 @@ export const useClassData = () => {
         setNewsItems(data.newsItems);
         setStudents(data.students);
         setHomeworkItems(data.homeworkItems);
-        setMaterialItems(data.materialItems);
+        setMaterialItems(data.materialItems.map((item: any) => ({
+          ...item,
+          fileUrl: item.file_url
+        })));
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {

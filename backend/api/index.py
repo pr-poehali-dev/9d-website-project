@@ -58,7 +58,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute('SELECT id, subject, task, due, status FROM t_p1679283_9d_website_project.homework ORDER BY id')
                 homework = cur.fetchall()
                 
-                cur.execute('SELECT id, title, type, size FROM t_p1679283_9d_website_project.materials ORDER BY id')
+                cur.execute('SELECT id, title, type, size, file_url FROM t_p1679283_9d_website_project.materials ORDER BY id')
                 materials = cur.fetchall()
                 
                 return {
@@ -127,8 +127,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 elif action == 'add_material':
                     cur.execute(
-                        'INSERT INTO t_p1679283_9d_website_project.materials (title, type, size) VALUES (%s, %s, %s) RETURNING id',
-                        (data['title'], data['type'], data['size'])
+                        'INSERT INTO t_p1679283_9d_website_project.materials (title, type, size, file_url) VALUES (%s, %s, %s, %s) RETURNING id',
+                        (data['title'], data['type'], data['size'], data.get('file_url'))
                     )
                     new_id = cur.fetchone()[0]
                     conn.commit()

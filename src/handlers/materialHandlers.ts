@@ -15,8 +15,8 @@ export const validateMaterialForm = (
 export const createMaterialHandlers = (
   materialForm: { title: string; file: File | null },
   setMaterialForm: (form: { title: string; file: File | null }) => void,
-  materialItems: Array<{id: number; title: string; type: string; size: string}>,
-  setMaterialItems: (items: Array<{id: number; title: string; type: string; size: string}>) => void,
+  materialItems: Array<{id: number; title: string; type: string; size: string; fileUrl?: string}>,
+  setMaterialItems: (items: Array<{id: number; title: string; type: string; size: string; fileUrl?: string}>) => void,
   editingMaterial: {id: number; title: string} | null,
   setEditingMaterial: (material: {id: number; title: string} | null) => void,
   dialogOpen: {[key: string]: boolean},
@@ -40,14 +40,21 @@ export const createMaterialHandlers = (
         } else if (materialForm.file) {
           const type = materialForm.file.name.split('.').pop()?.toUpperCase() || 'FILE';
           const size = `${Math.round(materialForm.file.size / 1024)} КБ`;
-          const response = await api.addMaterial(materialForm.title, type, size);
-          const newMaterial = {
-            id: response.id,
-            title: materialForm.title,
-            type: type,
-            size: size
+          
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const fileUrl = e.target?.result as string;
+            const response = await api.addMaterial(materialForm.title, type, size, fileUrl);
+            const newMaterial = {
+              id: response.id,
+              title: materialForm.title,
+              type: type,
+              size: size,
+              fileUrl: fileUrl
+            };
+            setMaterialItems([newMaterial, ...materialItems]);
           };
-          setMaterialItems([newMaterial, ...materialItems]);
+          reader.readAsDataURL(materialForm.file);
         }
         setMaterialForm({ title: '', file: null });
         setDialogOpen({...dialogOpen, material: false});

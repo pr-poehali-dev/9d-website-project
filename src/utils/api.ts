@@ -209,7 +209,7 @@ export const api = {
     return response.json();
   },
 
-  async addMaterial(title: string, type: string, size: string) {
+  async addMaterial(title: string, type: string, size: string, fileUrl: string) {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -218,7 +218,7 @@ export const api = {
       },
       body: JSON.stringify({
         action: 'add_material',
-        data: { title, type, size }
+        data: { title, type, size, file_url: fileUrl }
       })
     });
     

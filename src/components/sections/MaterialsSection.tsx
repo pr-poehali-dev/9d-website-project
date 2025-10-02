@@ -11,6 +11,7 @@ interface MaterialItem {
   title: string;
   type: string;
   size: string;
+  fileUrl?: string;
 }
 
 interface MaterialsSectionProps {
@@ -43,6 +44,26 @@ const MaterialsSection = ({
   handleDeleteMaterial
 }: MaterialsSectionProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewDialog, setPreviewDialog] = useState(false);
+  const [previewMaterial, setPreviewMaterial] = useState<MaterialItem | null>(null);
+
+  const handleOpenFile = (material: MaterialItem) => {
+    if (material.fileUrl) {
+      setPreviewMaterial(material);
+      setPreviewDialog(true);
+    }
+  };
+
+  const handleDownload = (material: MaterialItem) => {
+    if (material.fileUrl) {
+      const link = document.createElement('a');
+      link.href = material.fileUrl;
+      link.download = material.title;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   const filteredMaterials = useMemo(() => {
     if (!searchQuery.trim()) return materialItems;
@@ -138,6 +159,12 @@ const MaterialsSection = ({
                     </div>
                   </div>
                   <div className="flex space-x-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenFile(material)} title="Открыть файл">
+                      <Icon name="Eye" size={16} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDownload(material)} title="Скачать">
+                      <Icon name="Download" size={16} />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleEditMaterial(material)}>
                       <Icon name="Pencil" size={16} />
                     </Button>
@@ -171,6 +198,42 @@ const MaterialsSection = ({
           </div>
         )}
       </div>
+
+      <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{previewMaterial?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {previewMaterial && previewMaterial.fileUrl && (
+              <div className="w-full h-full min-h-[500px]">
+                {previewMaterial.type.toLowerCase().includes('pdf') ? (
+                  <iframe
+                    src={previewMaterial.fileUrl}
+                    className="w-full h-full min-h-[500px] border-0"
+                    title={previewMaterial.title}
+                  />
+                ) : previewMaterial.type.toLowerCase().match(/png|jpg|jpeg|gif|webp/) ? (
+                  <img
+                    src={previewMaterial.fileUrl}
+                    alt={previewMaterial.title}
+                    className="w-full h-auto"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full space-y-4">
+                    <Icon name="FileText" size={64} className="text-gray-300" />
+                    <p className="text-gray-500">Предпросмотр недоступен для этого типа файла</p>
+                    <Button onClick={() => handleDownload(previewMaterial)} className="flex items-center space-x-2">
+                      <Icon name="Download" size={18} />
+                      <span>Скачать файл</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

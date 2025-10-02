@@ -158,17 +158,17 @@ const MaterialsSection = ({
                       <span>{material.size}</span>
                     </div>
                   </div>
-                  <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm" onClick={() => handleOpenFile(material)} title="Открыть файл">
+                  <div className="grid grid-cols-2 gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenFile(material)} title="Открыть файл" className="h-9">
                       <Icon name="Eye" size={16} />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDownload(material)} title="Скачать">
+                    <Button variant="ghost" size="sm" onClick={() => handleDownload(material)} title="Скачать" className="h-9">
                       <Icon name="Download" size={16} />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEditMaterial(material)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleEditMaterial(material)} className="h-9">
                       <Icon name="Pencil" size={16} />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(material.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(material.id)} className="h-9">
                       <Icon name="Trash2" size={16} className="text-red-500" />
                     </Button>
                   </div>

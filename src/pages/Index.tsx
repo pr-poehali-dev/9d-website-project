@@ -73,7 +73,7 @@ const Index = () => {
   
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
-  const { handlePhotoUpload } = createPhotoHandler(setClassPhoto);
+  const { handlePhotoUpload } = createPhotoHandler(setClassPhoto, checkPassword);
 
   const {
     handleAddNews,

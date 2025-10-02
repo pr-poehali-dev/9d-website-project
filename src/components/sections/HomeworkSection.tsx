@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,19 @@ const HomeworkSection = ({
   handleEditHomework,
   handleDeleteHomework
 }: HomeworkSectionProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredHomework = useMemo(() => {
+    if (!searchQuery.trim()) return homeworkItems;
+    
+    const query = searchQuery.toLowerCase();
+    return homeworkItems.filter(hw => 
+      hw.subject.toLowerCase().includes(query) ||
+      hw.task.toLowerCase().includes(query) ||
+      hw.due.toLowerCase().includes(query)
+    );
+  }, [homeworkItems, searchQuery]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -108,9 +122,21 @@ const HomeworkSection = ({
           </DialogContent>
         </Dialog>
       </div>
+      
+      <div className="relative">
+        <Icon name="Search" size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Поиск по предмету, заданию, дате..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       <div className="space-y-4">
-        {homeworkItems.length > 0 ? (
-          homeworkItems.map((homework) => (
+        {filteredHomework.length > 0 ? (
+          filteredHomework.map((homework) => (
             <Card key={homework.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-3">
@@ -138,6 +164,14 @@ const HomeworkSection = ({
               </CardContent>
             </Card>
           ))
+        ) : searchQuery ? (
+          <Card className="border-dashed border-gray-300">
+            <CardContent className="p-12 text-center text-gray-500">
+              <Icon name="Search" size={48} className="mx-auto mb-4 text-gray-300" />
+              <p className="text-lg mb-2">Ничего не найдено</p>
+              <p>Попробуйте изменить поисковый запрос</p>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="border-dashed border-gray-300">
             <CardContent className="p-12 text-center text-gray-500">

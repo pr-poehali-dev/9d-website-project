@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -41,6 +42,18 @@ const MaterialsSection = ({
   handleEditMaterial,
   handleDeleteMaterial
 }: MaterialsSectionProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredMaterials = useMemo(() => {
+    if (!searchQuery.trim()) return materialItems;
+    
+    const query = searchQuery.toLowerCase();
+    return materialItems.filter(material => 
+      material.title.toLowerCase().includes(query) ||
+      material.type.toLowerCase().includes(query)
+    );
+  }, [materialItems, searchQuery]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -95,9 +108,21 @@ const MaterialsSection = ({
           </DialogContent>
         </Dialog>
       </div>
+      
+      <div className="relative">
+        <Icon name="Search" size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Поиск по названию, типу файла..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {materialItems.length > 0 ? (
-          materialItems.map((material) => (
+        {filteredMaterials.length > 0 ? (
+          filteredMaterials.map((material) => (
             <Card key={material.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
@@ -124,6 +149,16 @@ const MaterialsSection = ({
               </CardContent>
             </Card>
           ))
+        ) : searchQuery ? (
+          <div className="col-span-full">
+            <Card className="border-dashed border-gray-300">
+              <CardContent className="p-12 text-center text-gray-500">
+                <Icon name="Search" size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-lg mb-2">Ничего не найдено</p>
+                <p>Попробуйте изменить поисковый запрос</p>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="col-span-full">
             <Card className="border-dashed border-gray-300">
